@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citrus Disease Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        #preview { margin-top: 20px; max-width: 300px; display: none; }
+        #prediction { margin-top: 20px; font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Citrus Disease Detection</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <br><br>
+    <img id="preview" src="" alt="Image Preview">
+    <br>
+    <button onclick="predictDisease()">Predict</button>
+    <p id="prediction"></p>
+
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                    document.getElementById('preview').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function predictDisease() {
+            const fileInput = document.getElementById('imageInput');
+            if (!fileInput.files.length) {
+                alert('Please upload an image first.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            fetch('/predict', {  // This sends the image to Flask
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('prediction').innerText = 'Prediction: ' + data.prediction;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error predicting the disease.');
+            });
+        }
+    </script>
+</body>
+</html>
